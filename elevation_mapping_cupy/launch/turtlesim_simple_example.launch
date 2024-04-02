@@ -1,12 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <launch>
+    <env name="PYTHONPATH" value="/home/robotis/.local/lib/python3.8/site-packages:$(env PYTHONPATH)" />
+
     <arg name="rviz_config" default="$(find elevation_mapping_cupy)/rviz/turtle_example.rviz"/>
 
     <!-- Launch elevation mapping turtle sim. -->
     <include file="$(find elevation_mapping_cupy)/launch/turtlesim_init.launch">
         <arg name="rviz_config" value="$(arg rviz_config)"/>
     </include>
+
+    <!-- run laserscan_to_pointcloud node -->
+    <node pkg="pointcloud_to_laserscan" type="laserscan_to_pointcloud_node" name="laserscan_to_pointcloud">
+
+        <remap from="scan_in" to="/scan"/>
+        <remap from="cloud" to="/scan_to_cloud"/>
+        <rosparam>
+            target_frame: base_scan # Leave disabled to output pointcloud in scan frame
+            transform_tolerance: 0.01
+
+            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+            # 0 : Detect number of cores
+            # 1 : Single threaded
+            # 2->inf : Parallelism level
+            concurrency_level: 1
+        </rosparam>
+    </node>
 
     <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen">
         <rosparam command="load" file="$(find elevation_mapping_cupy)/config/core/core_param.yaml"/>
