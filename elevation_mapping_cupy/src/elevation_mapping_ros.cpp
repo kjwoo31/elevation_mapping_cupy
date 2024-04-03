@@ -320,21 +320,9 @@ void ElevationMappingNode::pointcloudCallback(const sensor_msgs::PointCloud2& cl
 void ElevationMappingNode::inputPointCloud(const sensor_msgs::PointCloud2& cloud,
                                           const std::vector<std::string>& channels) {
   auto start = ros::Time::now();
-  auto* pcl_pc_orig = new pcl::PCLPointCloud2;
-  pcl::PCLPointCloud2ConstPtr cloudPtr(pcl_pc_orig);
-  pcl_conversions::toPCL(cloud, *pcl_pc_orig);
-
   auto* pcl_pc = new pcl::PCLPointCloud2;
-  pcl::PCLPointCloud2ConstPtr cloudFilterPtr(pcl_pc);
-
-  // Create the filtering object
-  pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-  sor.setInputCloud (cloudPtr);
-  sor.setLeafSize (0.01f, 0.01f, 0.01f);
-  sor.filter (*pcl_pc);
-
-  std::size_t pcl_pc_size = cloud.data.size();
-  ROS_WARN_STREAM(pcl_pc_size);
+  pcl::PCLPointCloud2ConstPtr cloudPtr(pcl_pc);
+  pcl_conversions::toPCL(cloud, *pcl_pc);
 
   //  get channels
   auto fields = cloud.fields;

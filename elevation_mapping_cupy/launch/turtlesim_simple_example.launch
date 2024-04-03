@@ -11,21 +11,12 @@
     </include>
 
     <!-- run laserscan_to_pointcloud node -->
-    <node pkg="pointcloud_to_laserscan" type="laserscan_to_pointcloud_node" name="laserscan_to_pointcloud">
+    <!-- <include file="$(find elevation_mapping_cupy)/launch/include/laserscan_to_pointcloud.launch">
+    </include> -->
 
-        <remap from="scan_in" to="/scan"/>
-        <remap from="cloud" to="/scan_to_cloud"/>
-        <rosparam>
-            target_frame: base_scan # Leave disabled to output pointcloud in scan frame
-            transform_tolerance: 0.01
-
-            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-            # 0 : Detect number of cores
-            # 1 : Single threaded
-            # 2->inf : Parallelism level
-            concurrency_level: 1
-        </rosparam>
-    </node>
+    <!-- (Not Working) run depth_to_pointcloud node -->
+    <include file="$(find elevation_mapping_cupy)/launch/include/depth_to_pointcloud.launch">
+    </include>
 
     <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen">
         <rosparam command="load" file="$(find elevation_mapping_cupy)/config/core/core_param.yaml"/>

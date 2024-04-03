@@ -34,28 +34,6 @@ export TURTLEBOT3_MODEL=waffle
 roslaunch elevation_mapping_cupy turtlesim_simple_example.launch
 ```
 
-For fusing semantics into the map such as rgb from a multi modal pointcloud:
-
-```bash
-export TURTLEBOT3_MODEL=waffle
-roslaunch elevation_mapping_cupy turtlesim_semantic_pointcloud_example.launch
-```
-
-For fusing semantics into the map such as rgb semantics or features from an image:
-
-```bash
-export TURTLEBOT3_MODEL=waffle
-roslaunch elevation_mapping_cupy turtlesim_semantic_image_example.launch
-```
-
-For plane segmentation:
-
-```bash
-catkin build convex_plane_decomposition_ros
-export TURTLEBOT3_MODEL=waffle
-roslaunch elevation_mapping_cupy turtlesim_plane_decomposition_example.launch
-```
-
 To control the robot with a keyboard, a new terminal window needs to be opened.
 Then run
 

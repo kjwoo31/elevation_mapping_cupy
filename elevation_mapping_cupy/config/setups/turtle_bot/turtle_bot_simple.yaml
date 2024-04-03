@@ -8,16 +8,22 @@ image_channel_fusions:
   feat_.*: 'exponential'
 
 subscribers:
-  front_cam:
-    topic_name: '/camera/depth/points'
+  depth_cam:
+    topic_name: '/camera/depth/depth_to_cloud'
     data_type: pointcloud
+  # lidar:
+  #   topic_name: '/scan_to_cloud'
+  #   data_type: pointcloud
+  # color_cam: # for color camera
+  #   topic_name: '/camera/rgb/image_raw'
+  #   camera_info_topic_name: '/camera/depth/camera_info'
+  #   data_type: image
+  # front_cam:
+  #   topic_name: '/camera/depth/points'
+  #   data_type: pointcloud
 
 publishers:
   elevation_map_raw:
-    layers: ['elevation', 'traversability', 'variance','rgb']
+    layers: ['elevation', 'rgb']
     basic_layers: ['elevation']
     fps: 5.0
-  elevation_map_filter:
-    layers: ['min_filter', 'smooth', 'inpaint', 'elevation']
-    basic_layers: ['min_filter']
-    fps: 3.0
