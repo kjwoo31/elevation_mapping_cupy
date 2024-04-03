@@ -458,6 +458,59 @@ class ElevationMap:
             orientation_noise,
         )
 
+    def input_depth(
+        self,
+        image: cp._core.core.ndarray,
+        R: cp._core.core.ndarray,
+        t: cp._core.core.ndarray,
+        K: cp._core.core.ndarray,
+        position_noise: float,
+        orientation_noise: float,
+    ):
+        """Input image and fuse the new measurements to update the elevation map.
+
+        Args:
+            sub_key (str): Key used to identify the subscriber configuration
+            image (List[cupy._core.core.ndarray]): List of array containing the individual image input channels
+            R (cupy._core.core.ndarray): Camera optical center rotation
+            t (cupy._core.core.ndarray): Camera optical center translation
+            K (cupy._core.core.ndarray): Camera intrinsics
+            image_height (int): Image height
+            image_width (int): Image width
+
+        Returns:
+            None:
+        """
+        # Convert to cupy
+        depth = cp.asarray(image, dtype=self.data_type)
+        K = cp.asarray(K, dtype=self.data_type)
+
+        pos = cp.where(depth > 0, 1, 0)
+        low = cp.where(depth < 8, 1, 0)
+        conf = cp.ones(pos.shape)
+        fin = cp.isfinite(depth)
+        temp = cp.maximum(cp.rint(fin + pos + conf + low - 2.6), 0)
+        mask = cp.nonzero(temp)
+        u = mask[1]
+        v = mask[0]
+
+        # create pointcloud
+        world_x = (u.astype(np.float32) - K[0, 2]) * depth[v, u] / K[0, 0]
+        world_y = (v.astype(np.float32) - K[1, 2]) * depth[v, u] / K[1, 1]
+        world_z = depth[v, u]
+        raw_points = cp.stack((world_x, world_y, world_z), axis=1)
+
+        additional_channels = []
+        raw_points = raw_points[~cp.isnan(raw_points).any(axis=1)]
+        self.update_map_with_kernel(
+            raw_points,
+            additional_channels,
+            cp.asarray(R, dtype=self.data_type),
+            cp.asarray(t, dtype=self.data_type),
+            position_noise,
+            orientation_noise,
+        )
+
     def input_image(
         self,
         image: List[cp._core.core.ndarray],

@@ -92,14 +92,13 @@ class ElevationMappingNode {
   void setupMapPublishers();
   void pointcloudCallback(const sensor_msgs::PointCloud2& cloud, const std::string& key);
   void inputPointCloud(const sensor_msgs::PointCloud2& cloud, const std::vector<std::string>& channels);
+  void depthCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg);
   void inputImage(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const std::vector<std::string>& channels);
   void imageCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const std::string& key);
   void imageChannelCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
   void pointCloudChannelCallback(const sensor_msgs::PointCloud2& cloud, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
-  // void multiLayerImageCallback(const elevation_map_msgs::MultiLayerImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg);
   void publishAsPointCloud(const grid_map::GridMap& map) const;
   bool getSubmap(grid_map_msgs::GetGridMap::Request& request, grid_map_msgs::GetGridMap::Response& response);
-  bool checkSafety(elevation_map_msgs::CheckSafety::Request& request, elevation_map_msgs::CheckSafety::Response& response);
   bool initializeMap(elevation_map_msgs::Initialize::Request& request, elevation_map_msgs::Initialize::Response& response);
   bool clearMap(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
   bool clearMapWithInitializer(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
@@ -186,6 +185,7 @@ class ElevationMappingNode {
   double initializeTfGridSize_;
   bool alwaysClearWithInitializer_;
   std::atomic_int pointCloudProcessCounter_;
+  std::atomic_int depthProcessCounter_;
 };
 
 }  // namespace elevation_mapping_cupy

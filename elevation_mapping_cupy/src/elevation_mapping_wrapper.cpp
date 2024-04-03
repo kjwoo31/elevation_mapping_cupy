@@ -177,6 +177,13 @@ void ElevationMappingWrapper::input(const RowMatrixXd& points, const std::vector
                      Eigen::Ref<const Eigen::VectorXd>(t), positionNoise, orientationNoise);
 }
 
+void ElevationMappingWrapper::input_depth(const ColMatrixXf& image, const RowMatrixXd& R, const Eigen::VectorXd& t, 
+                                          const RowMatrixXd& cameraMatrix, const double positionNoise, const double orientationNoise) {
+  py::gil_scoped_acquire acquire;
+  map_.attr("input_depth")(image, Eigen::Ref<const RowMatrixXd>(R), Eigen::Ref<const Eigen::VectorXd>(t),
+                           Eigen::Ref<const RowMatrixXd>(cameraMatrix), positionNoise, orientationNoise);
+}
+
 void ElevationMappingWrapper::input_image(const std::vector<ColMatrixXf>& multichannel_image, const std::vector<std::string>& channels, const RowMatrixXd& R,
                                           const Eigen::VectorXd& t, const RowMatrixXd& cameraMatrix, int height, int width) {
   py::gil_scoped_acquire acquire;

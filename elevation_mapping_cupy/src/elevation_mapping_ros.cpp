@@ -90,6 +90,36 @@ ElevationMappingNode::ElevationMappingNode(ros::NodeHandle& nh)
       pointcloudSubs_.push_back(sub);
       ROS_INFO_STREAM("Subscribed to PointCloud2 topic: " << pointcloud_topic);
     }
+    else if (type == "depth") {
+      std::string camera_topic = subscriber.second["topic_name"];
+      std::string info_topic = subscriber.second["camera_info_topic_name"];
+
+      // Handle compressed images with transport hints
+      // We obtain the hint from the last part of the topic name
+      std::string transport_hint = "compressed";
+      std::size_t ind = camera_topic.find(transport_hint);  // Find if compressed is in the topic name
+      if (ind != std::string::npos) {
+        transport_hint = camera_topic.substr(ind, camera_topic.length());  // Get the hint as the last part
+        camera_topic.erase(ind - 1, camera_topic.length());                // We remove the hint from the topic
+      } else {
+        transport_hint = "raw";  // In the default case we assume raw topic
+      }
+
+      // Setup subscriber
+      const auto hint = image_transport::TransportHints(transport_hint, ros::TransportHints(), ros::NodeHandle(camera_topic));
+      ImageSubscriberPtr image_sub = std::make_shared<ImageSubscriber>();
+      image_sub->subscribe(it_, camera_topic, 1, hint);
+      imageSubs_.push_back(image_sub);
+
+      CameraInfoSubscriberPtr cam_info_sub = std::make_shared<CameraInfoSubscriber>();
+      cam_info_sub->subscribe(nh_, info_topic, 1);
+      cameraInfoSubs_.push_back(cam_info_sub);
+
+      CameraSyncPtr sync = std::make_shared<CameraSync>(CameraPolicy(10), *image_sub, *cam_info_sub);
+      sync->registerCallback(boost::bind(&ElevationMappingNode::depthCallback, this, _1, _2));
+      cameraSyncs_.push_back(sync);
+      ROS_INFO_STREAM("Subscribed to Image topic: " << camera_topic << ", Camera info topic: " << info_topic);
+    }
     else if (type == "image") {
       std::string camera_topic = subscriber.second["topic_name"];
       std::string info_topic = subscriber.second["camera_info_topic_name"];
@@ -205,7 +235,6 @@ ElevationMappingNode::ElevationMappingNode(ros::NodeHandle& nh)
   clearMapWithInitializerService_ =
       nh_.advertiseService("clear_map_with_initializer", &ElevationMappingNode::clearMapWithInitializer, this);
   setPublishPointService_ = nh_.advertiseService("set_publish_points", &ElevationMappingNode::setPublishPoint, this);
-  checkSafetyService_ = nh_.advertiseService("check_safety", &ElevationMappingNode::checkSafety, this);
 
   if (updateVarianceFps > 0) {
     double duration = 1.0 / (updateVarianceFps + 0.00001);
@@ -371,6 +400,56 @@ void ElevationMappingNode::inputPointCloud(const sensor_msgs::PointCloud2& cloud
   ROS_DEBUG_THROTTLE(1.0, "positionError: %f ", positionError);
   ROS_DEBUG_THROTTLE(1.0, "orientationError: %f ", orientationError);
 
+}
+
+void ElevationMappingNode::depthCallback(const sensor_msgs::ImageConstPtr& image_msg,
+                                         const sensor_msgs::CameraInfoConstPtr& camera_info_msg) {
+  auto start = ros::Time::now();
+  // Get image
+  cv::Mat image = cv_bridge::toCvShare(image_msg, image_msg->encoding)->image;
+
+  // Extract camera matrix
+  Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> cameraMatrix(&camera_info_msg->K[0]);
+
+  //  get pose of sensor in map frame
+  tf::StampedTransform transformTf;
+  std::string sensorFrameId = image_msg->header.frame_id;
+  auto timeStamp = image_msg->header.stamp;
+  Eigen::Affine3d transformationSensorToMap;
+  try {
+    transformListener_.waitForTransform(mapFrameId_, sensorFrameId, timeStamp, ros::Duration(1.0));
+    transformListener_.lookupTransform(mapFrameId_, sensorFrameId, timeStamp, transformTf);
+    poseTFToEigen(transformTf, transformationSensorToMap);
+  } catch (tf::TransformException& ex) {
+    ROS_ERROR("%s", ex.what());
+    return;
+  }
+
+  // Transform image to Eigen matrix for easy pybind conversion
+  ColMatrixXf eigen_img;
+  cv::cv2eigen(image, eigen_img);
+
+  double positionError{0.0};
+  double orientationError{0.0};
+  {
+    std::lock_guard<std::mutex> lock(errorMutex_);
+    positionError = positionError_;
+    orientationError = orientationError_;
+  }
+  // Pass image to pipeline
+  map_.input_depth(eigen_img, transformationSensorToMap.rotation(), transformationSensorToMap.translation(), cameraMatrix,
+                   positionError, orientationError);
+
+  if (enableDriftCorrectedTFPublishing_) {
+    publishMapToOdom(map_.get_additive_mean_error());
+  }
+
+  ROS_DEBUG_THROTTLE(1.0, "ElevationMap processed a depth image in %f sec.", (ros::Time::now() - start).toSec());
+  ROS_DEBUG_THROTTLE(1.0, "positionError: %f ", positionError);
+  ROS_DEBUG_THROTTLE(1.0, "orientationError: %f ", orientationError);
+
+  // This is used for publishing as statistics.
+  depthProcessCounter_++;
 }
 
 void ElevationMappingNode::inputImage(const sensor_msgs::ImageConstPtr& image_msg,
@@ -588,63 +667,6 @@ void ElevationMappingNode::initializeWithTF() {
   map_.initializeWithPoints(points, initializeMethod_);
 }
 
-bool ElevationMappingNode::checkSafety(elevation_map_msgs::CheckSafety::Request& request,
-                                       elevation_map_msgs::CheckSafety::Response& response) {
-  for (const auto& polygonstamped : request.polygons) {
-    if (polygonstamped.polygon.points.empty()) {
-      continue;
-    }
-    std::vector<Eigen::Vector2d> polygon;
-    std::vector<Eigen::Vector2d> untraversable_polygon;
-    Eigen::Vector3d result;
-    result.setZero();
-    const auto& polygonFrameId = polygonstamped.header.frame_id;
-    const auto& timeStamp = polygonstamped.header.stamp;
-    double polygon_z = polygonstamped.polygon.points[0].z;
-
-    // Get tf from map frame to polygon frame
-    if (mapFrameId_ != polygonFrameId) {
-      Eigen::Affine3d transformationBaseToMap;
-      tf::StampedTransform transformTf;
-      try {
-        transformListener_.waitForTransform(mapFrameId_, polygonFrameId, timeStamp, ros::Duration(1.0));
-        transformListener_.lookupTransform(mapFrameId_, polygonFrameId, timeStamp, transformTf);
-        poseTFToEigen(transformTf, transformationBaseToMap);
-      } catch (tf::TransformException& ex) {
-        ROS_ERROR("%s", ex.what());
-        return false;
-      }
-      for (const auto& p : polygonstamped.polygon.points) {
-        const auto& pvector = Eigen::Vector3d(p.x, p.y, p.z);
-        const auto transformed_p = transformationBaseToMap * pvector;
-        polygon.emplace_back(Eigen::Vector2d(transformed_p.x(), transformed_p.y()));
-      }
-    } else {
-      for (const auto& p : polygonstamped.polygon.points) {
-        polygon.emplace_back(Eigen::Vector2d(p.x, p.y));
-      }
-    }
-
-    map_.get_polygon_traversability(polygon, result, untraversable_polygon);
-
-    geometry_msgs::PolygonStamped untraversable_polygonstamped;
-    untraversable_polygonstamped.header.stamp = ros::Time::now();
-    untraversable_polygonstamped.header.frame_id = mapFrameId_;
-    for (const auto& p : untraversable_polygon) {
-      geometry_msgs::Point32 point;
-      point.x = static_cast<float>(p.x());
-      point.y = static_cast<float>(p.y());
-      point.z = static_cast<float>(polygon_z);
-      untraversable_polygonstamped.polygon.points.push_back(point);
-    }
-    // traversability_result;
-    response.is_safe.push_back(bool(result[0] > 0.5));
-    response.traversability.push_back(result[1]);
-    response.untraversable_polygons.push_back(untraversable_polygonstamped);
-  }
-  return true;
-}
-
 bool ElevationMappingNode::setPublishPoint(std_srvs::SetBool::Request& request, std_srvs::SetBool::Response& response) {
   enablePointCloudPublishing_ = request.data;
   response.success = true;
@@ -667,8 +689,10 @@ void ElevationMappingNode::publishStatistics(const ros::TimerEvent&) {
   msg.header.stamp = now;
   if (dt > 0.0) {
     msg.pointcloud_process_fps = pointCloudProcessCounter_ / dt;
+    msg.depth_process_fps = depthProcessCounter_ / dt;
   }
   pointCloudProcessCounter_ = 0;
+  depthProcessCounter_ = 0;
   statisticsPub_.publish(msg);
 }
 
