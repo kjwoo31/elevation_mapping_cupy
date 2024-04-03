@@ -28,6 +28,6 @@ subscribers:
 
 publishers:
   elevation_map_raw:
-    layers: ['elevation', 'rgb']
+    layers: ['elevation']
     basic_layers: ['elevation']
     fps: 5.0
