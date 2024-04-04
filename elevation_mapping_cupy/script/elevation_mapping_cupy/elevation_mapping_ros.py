@@ -252,26 +252,11 @@ class ElevationMapWrapper:
 
         self.subscribers = rospy.get_param("~subscribers")
         self.publishers = rospy.get_param("~publishers")
-        self.initialize_frame_id = rospy.get_param("~initialize_frame_id", "base")
-        self.initialize_tf_offset = rospy.get_param("~initialize_tf_offset", 0.0)
-        self.pose_topic = rospy.get_param("~pose_topic", "pose")
         self.map_frame = rospy.get_param("~map_frame", "map")
         self.base_frame = rospy.get_param("~base_frame", "base")
-        self.corrected_map_frame = rospy.get_param("~corrected_map_frame", "corrected_map")
-        self.initialize_method = rospy.get_param("~initialize_method", "cubic")
-        self.position_lowpass_alpha = rospy.get_param("~position_lowpass_alpha", 0.2)
-        self.orientation_lowpass_alpha = rospy.get_param("~orientation_lowpass_alpha", 0.2)
-        self.recordable_fps = rospy.get_param("~recordable_fps", 3.0)
         self.update_variance_fps = rospy.get_param("~update_variance_fps", 1.0)
         self.time_interval = rospy.get_param("~time_interval", 0.1)
         self.update_pose_fps = rospy.get_param("~update_pose_fps", 10.0)
-        self.initialize_tf_grid_size = rospy.get_param("~initialize_tf_grid_size", 0.5)
-        self.map_acquire_fps = rospy.get_param("~map_acquire_fps", 5.0)
-        self.publish_statistics_fps = rospy.get_param("~publish_statistics_fps", 1.0)
-        self.enable_pointcloud_publishing = rospy.get_param("~enable_pointcloud_publishing", False)
-        self.enable_normal_arrow_publishing = rospy.get_param("~enable_normal_arrow_publishing", False)
-        self.enable_drift_corrected_TF_publishing = rospy.get_param("~enable_drift_corrected_TF_publishing", False)
-        self.use_initializer_at_start = rospy.get_param("~use_initializer_at_start", False)
 
 
 if __name__ == "__main__":

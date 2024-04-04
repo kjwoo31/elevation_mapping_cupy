@@ -9,10 +9,7 @@ import numpy as np
 import threading
 import subprocess
 
-from elevation_mapping_cupy.traversability_filter import (
-    get_filter_chainer,
-    get_filter_torch,
-)
+from elevation_mapping_cupy.traversability_filter import get_filter_torch
 from elevation_mapping_cupy.parameter import Parameter
 
 from elevation_mapping_cupy.kernels import (
@@ -103,10 +100,7 @@ class ElevationMap:
         weight_file = subprocess.getoutput('echo "' + param.weight_file + '"')
         param.load_weights(weight_file)
 
-        if param.use_chainer:
-            self.traversability_filter = get_filter_chainer(param.w1, param.w2, param.w3, param.w_out)
-        else:
-            self.traversability_filter = get_filter_torch(param.w1, param.w2, param.w3, param.w_out)
+        self.traversability_filter = get_filter_torch(param.w1, param.w2, param.w3, param.w_out)
         self.untraversable_polygon = xp.zeros((1, 2))
 
         # Plugins
@@ -934,7 +928,7 @@ if __name__ == "__main__":
     t = xp.random.rand(3)
     print(R, t)
     param = Parameter(
-        use_chainer=False, weight_file="../config/weights.dat", plugin_config_file="../config/plugin_config.yaml",
+        weight_file="../config/weights.dat", plugin_config_file="../config/plugin_config.yaml",
     )
     param.additional_layers = ["rgb", "grass", "tree", "people"]
     param.fusion_algorithms = ["color", "class_bayesian", "class_bayesian", "class_bayesian"]
