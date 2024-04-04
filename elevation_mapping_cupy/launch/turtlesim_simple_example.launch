@@ -19,7 +19,7 @@
     </include> -->
 
     <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen">
-        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/core/core_param.yaml"/>
+        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/turtle_bot/core_param.yaml"/>
         <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/turtle_bot/turtle_bot_simple.yaml"/>
     </node>
 </launch>

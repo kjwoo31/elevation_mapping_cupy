@@ -4,7 +4,7 @@ project(elevation_map_msgs)
 find_package(catkin REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
+  std_msgs
   message_generation
 )
 
@@ -13,17 +13,10 @@ add_message_files(
   ChannelInfo.msg
 )
 
-## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  Initialize.srv
-)
-
-
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geometry_msgs
+  std_msgs
 )
 
 catkin_package(

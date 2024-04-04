@@ -28,7 +28,6 @@
 #include <tf/transform_listener.h>
 
 // Grid Map
-#include <grid_map_msgs/GetGridMap.h>
 #include <grid_map_msgs/GridMap.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 
@@ -41,7 +40,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/core/eigen.hpp>
 
-#include <elevation_map_msgs/Initialize.h>
 #include <elevation_map_msgs/ChannelInfo.h>
 
 #include "elevation_mapping_cupy/elevation_mapping_wrapper.hpp"
@@ -90,7 +88,6 @@ class ElevationMappingNode {
   void imageCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const std::string& key);
   void imageChannelCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
   void pointCloudChannelCallback(const sensor_msgs::PointCloud2& cloud, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
-  bool initializeMap(elevation_map_msgs::Initialize::Request& request, elevation_map_msgs::Initialize::Response& response);
   void updatePose(const ros::TimerEvent&);
   void updateVariance(const ros::TimerEvent&);
   void updateTime(const ros::TimerEvent&);
@@ -108,7 +105,6 @@ class ElevationMappingNode {
   std::vector<CameraChannelSyncPtr> cameraChannelSyncs_;
   std::vector<PointCloudSyncPtr> pointCloudSyncs_;
   std::vector<ros::Publisher> mapPubs_;
-  ros::ServiceServer initializeMapService_;
   ros::Timer updateVarianceTimer_;
   ros::Timer updateTimeTimer_;
   ros::Timer updatePoseTimer_;

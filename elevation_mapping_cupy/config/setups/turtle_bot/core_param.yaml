@@ -4,7 +4,7 @@ map_length: 5.0                                 # map's size in m.
 sensor_noise_factor: 0.05                       # point's noise is sensor_noise_factor*z^2 (z is distance from sensor).
 mahalanobis_thresh: 2.0                         # points outside this distance is outlier.
 outlier_variance: 0.01                          # if point is outlier, add this value to the cell.
-drift_compensation_variance_inler: 0.05         # cells under this value is used for drift compensation.
+drift_compensation_variance_inlier: 0.05         # cells under this value is used for drift compensation.
 max_drift: 0.1                                  # drift compensation happens only the drift is smaller than this value (for safety)
 drift_compensation_alpha: 0.1                   # drift compensation alpha for smoother update of drift compensation
 time_variance: 0.0001                           # add this value when update_variance is called.
@@ -32,10 +32,6 @@ max_ray_length: 10.0                            # maximum length for ray tracing
 cleanup_step: 0.1                               # subtitute this value from validity layer at visibiltiy cleanup.
 cleanup_cos_thresh: 0.1                         # subtitute this value from validity layer at visibiltiy cleanup.
 
-safe_thresh: 0.7                                # if traversability is smaller, it is counted as unsafe cell.
-safe_min_thresh: 0.4                            # polygon is unsafe if there exists lower traversability than this.
-max_unsafe_n: 10                                # if the number of cells under safe_thresh exceeds this value, polygon is unsafe.
-
 overlap_clear_range_xy: 4.0                     # xy range [m] for clearing overlapped area. this defines the valid area for overlap clearance. (used for multi floor setting)
 overlap_clear_range_z: 2.0                      # z range [m] for clearing overlapped area. cells outside this range will be cleared. (used for multi floor setting)
 
@@ -47,14 +43,9 @@ enable_edge_sharpen: true
 enable_visibility_cleanup: true
 enable_drift_compensation: true
 enable_overlap_clearance: true
-enable_normal_color: false                      # If true, the map contains 'color' layer corresponding to normal. Add 'color' layer to the publishers setting if you want to visualize.
 
 #### Traversability filter ########
-use_chainer: false                              # Use chainer as a backend of traversability filter or pytorch. If false, it uses pytorch. pytorch requires ~2GB more GPU memory compared to chainer but runs faster.
 weight_file: '$(rospack find elevation_mapping_cupy)/config/core/weights.dat'               # Weight file for traversability filter
 
-#### Upper bound ########
-use_only_above_for_upper_bound: false
-
 #### Default Plugins ########
-plugin_config_file: '$(rospack find elevation_mapping_cupy)/config/core/plugin_config.yaml'
+plugin_config_file: '$(rospack find elevation_mapping_cupy)/config/setups/turtle_bot/plugin_config.yaml'

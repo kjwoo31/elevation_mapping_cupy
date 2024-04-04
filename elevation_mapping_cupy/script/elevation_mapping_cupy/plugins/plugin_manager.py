@@ -136,19 +136,20 @@ class PluginManager(object):
         cfg = YAML().load(open(file_path, "r"))
         plugin_params = []
         extra_params = []
-        for k, v in cfg.items():
-            if v["enable"]:
-                plugin_params.append(
-                    PluginParams(
-                        name=k if not "type" in v else v["type"],
-                        layer_name=v["layer_name"],
-                        fill_nan=v["fill_nan"],
-                        is_height_layer=v["is_height_layer"],
+        if cfg is not None:
+            for k, v in cfg.items():
+                if v["enable"]:
+                    plugin_params.append(
+                        PluginParams(
+                            name=k if not "type" in v else v["type"],
+                            layer_name=v["layer_name"],
+                            fill_nan=v["fill_nan"],
+                            is_height_layer=v["is_height_layer"],
+                        )
                     )
-                )
-                extra_params.append(v["extra_params"])
-        self.init(plugin_params, extra_params)
-        print("Loaded plugins are ", *self.plugin_names)
+                    extra_params.append(v["extra_params"])
+            self.init(plugin_params, extra_params)
+            print("Loaded plugins are ", *self.plugin_names)
 
     def get_layer_names(self):
         names = []

@@ -50,8 +50,6 @@ class Parameter(Serializable):
                        (Default: ``1.0``)
         dilation_size: The dilation filter size before traversability filter.  
                        (Default: ``2``)
-        dilation_size_initialize: The dilation size after the init.  
-                                  (Default: ``10``)
         drift_compensation_alpha: The drift compensation alpha for smoother update of drift compensation.  
                                   (Default: ``1.0``)
         traversability_inlier: Cells with higher traversability are used for drift compensation.  
@@ -76,18 +74,6 @@ class Parameter(Serializable):
                                (Default: ``1.0``)
         ramped_height_range_c: If z > max(d - ramped_height_range_b, 0) * ramped_height_range_a + ramped_height_range_c, reject.  
                                (Default: ``0.2``)
-        safe_thresh: If traversability is smaller, it is counted as unsafe cell.  
-                     (Default: ``0.5``)
-        safe_min_thresh: Polygon is unsafe if there exists lower traversability than this.  
-                          (Default: ``0.5``)
-        max_unsafe_n: If the number of cells under safe_thresh exceeds this value, polygon is unsafe.  
-                      (Default: ``20``)
-        checker_layer: Layer used for checking safety.  
-                       (Default: ``"traversability"``)
-        min_filter_size: The minimum size for the filter.  
-                         (Default: ``5``)
-        min_filter_iteration: The minimum number of iterations for the filter.  
-                              (Default: ``3``)
         max_drift: The maximum drift for the compensation.  
                    (Default: ``0.10``)
         overlap_clear_range_xy: XY range [m] for clearing overlapped area. This defines the valid area for overlap clearance. (used for multi floor setting)  
@@ -102,8 +88,6 @@ class Parameter(Serializable):
                                    (Default: ``True``)
         enable_overlap_clearance: Enable overlap clearance.  
                                   (Default: ``True``)
-        use_only_above_for_upper_bound: Use only above for upper bound.  
-                                        (Default: ``True``)
         position_noise_thresh: If the position change is bigger than this value, the drift compensation happens.  
                               (Default: ``0.1``)
         orientation_noise_thresh: If the orientation change is bigger than this value, the drift compensation happens.  
@@ -114,8 +98,6 @@ class Parameter(Serializable):
                      (Default: ``"config/weights.dat"``)
         initial_variance: Initial variance for each cell.  
                           (Default: ``10.0``)
-        initialized_variance: Initialized variance for each cell.  
-                              (Default: ``10.0``)
         w1: Weights for the first layer.  
             (Default: ``np.zeros((4, 1, 3, 3))``)
         w2: Weights for the second layer.  
@@ -170,7 +152,6 @@ class Parameter(Serializable):
 
     max_variance: float = 1.0  # maximum variance for each cell.
     dilation_size: float = 2  # dilation filter size before traversability filter.
-    dilation_size_initialize: float = 10  # dilation size after the init.
     drift_compensation_alpha: float = 1.0  # drift compensation alpha for smoother update of drift compensation.
 
     traversability_inlier: float = 0.1  # cells with higher traversability are used for drift compensation.
@@ -186,14 +167,6 @@ class Parameter(Serializable):
     ramped_height_range_b: float = 1.0  # if z > max(d - ramped_height_range_b, 0) * ramped_height_range_a + ramped_height_range_c, reject.
     ramped_height_range_c: float = 0.2  # if z > max(d - ramped_height_range_b, 0) * ramped_height_range_a + ramped_height_range_c, reject.
 
-    safe_thresh: float = 0.5  # if traversability is smaller, it is counted as unsafe cell.
-    safe_min_thresh: float = 0.5  # polygon is unsafe if there exists lower traversability than this.
-    max_unsafe_n: int = 20  # if the number of cells under safe_thresh exceeds this value, polygon is unsafe.
-    checker_layer: str = "traversability"  # layer used for checking safety
-
-    min_filter_size: int = 5  # minimum size for the filter
-    min_filter_iteration: int = 3  # minimum number of iterations for the filter
-
     max_drift: float = 0.10  # maximum drift for the compensation
 
     overlap_clear_range_xy: float = 4.0  # xy range [m] for clearing overlapped area. this defines the valid area for overlap clearance. (used for multi floor setting)
@@ -203,7 +176,6 @@ class Parameter(Serializable):
     enable_drift_compensation: bool = True  # enable drift compensation
     enable_visibility_cleanup: bool = True  # enable visibility cleanup
     enable_overlap_clearance: bool = True  # enable overlap clearance
-    use_only_above_for_upper_bound: bool = True  # use only above for upper bound
     position_noise_thresh: float = 0.1  # if the position change is bigger than this value, the drift compensation happens.
     orientation_noise_thresh: float = 0.1  # if the orientation change is bigger than this value, the drift compensation happens.
 
@@ -211,7 +183,6 @@ class Parameter(Serializable):
     weight_file: str = "config/weights.dat"  # weight file for traversability filter
 
     initial_variance: float = 10.0  # initial variance for each cell.
-    initialized_variance: float = 10.0  # initialized variance for each cell.
     w1: np.ndarray = field(default_factory=lambda: np.zeros((4, 1, 3, 3)))  # weights for the first layer
     w2: np.ndarray = field(default_factory=lambda: np.zeros((4, 1, 3, 3)))  # weights for the second layer
     w3: np.ndarray = field(default_factory=lambda: np.zeros((4, 1, 3, 3)))  # weights for the third layer
