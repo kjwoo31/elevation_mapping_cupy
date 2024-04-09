@@ -23,7 +23,6 @@ find_package(catkin REQUIRED
   sensor_msgs
   std_msgs
   geometry_msgs
-  elevation_map_msgs
   grid_map_msgs
   grid_map_ros
   image_transport
@@ -43,7 +42,6 @@ catkin_package(
     sensor_msgs
     std_msgs
     geometry_msgs
-    elevation_map_msgs
     grid_map_ros
     image_transport
     pcl_ros

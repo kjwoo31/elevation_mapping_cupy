@@ -40,8 +40,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/core/eigen.hpp>
 
-#include <elevation_map_msgs/ChannelInfo.h>
-
 #include "elevation_mapping_cupy/elevation_mapping_wrapper.hpp"
 
 namespace py = pybind11;
@@ -64,35 +62,18 @@ class ElevationMappingNode {
   using CameraSync = message_filters::Synchronizer<CameraPolicy>;
   using CameraSyncPtr = std::shared_ptr<CameraSync>;
 
-  // Subscriber and Synchronizer for ChannelInfo messages
-  using ChannelInfoSubscriber = message_filters::Subscriber<elevation_map_msgs::ChannelInfo>;
-  using ChannelInfoSubscriberPtr = std::shared_ptr<ChannelInfoSubscriber>;
-  using CameraChannelPolicy = message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, elevation_map_msgs::ChannelInfo>;
-  using CameraChannelSync = message_filters::Synchronizer<CameraChannelPolicy>;
-  using CameraChannelSyncPtr = std::shared_ptr<CameraChannelSync>;
-
-  // Subscriber and Synchronizer for Pointcloud messages
-  using PointCloudSubscriber = message_filters::Subscriber<sensor_msgs::PointCloud2>;
-  using PointCloudSubscriberPtr = std::shared_ptr<PointCloudSubscriber>;
-  using PointCloudPolicy = message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, elevation_map_msgs::ChannelInfo>;
-  using PointCloudSync = message_filters::Synchronizer<PointCloudPolicy>;
-  using PointCloudSyncPtr = std::shared_ptr<PointCloudSync>;
-
  private:
   void readParameters();
   void setupMapPublishers();
-  void pointcloudCallback(const sensor_msgs::PointCloud2& cloud, const std::string& key);
+  void pointcloudCallback(const sensor_msgs::PointCloud2& cloud);
   void inputPointCloud(const sensor_msgs::PointCloud2& cloud, const std::vector<std::string>& channels);
   void depthCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg);
   void inputImage(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const std::vector<std::string>& channels);
   void imageCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const std::string& key);
-  void imageChannelCallback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& camera_info_msg, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
-  void pointCloudChannelCallback(const sensor_msgs::PointCloud2& cloud, const elevation_map_msgs::ChannelInfoConstPtr& channel_info_msg);
   void updatePose(const ros::TimerEvent&);
   void updateVariance(const ros::TimerEvent&);
   void updateTime(const ros::TimerEvent&);
   void updateGridMap(const ros::TimerEvent&);
-  void publishMapToOdom(double error);
   void publishMapOfIndex(int index);
 
   ros::NodeHandle nh_;
@@ -100,10 +81,7 @@ class ElevationMappingNode {
   std::vector<ros::Subscriber> pointcloudSubs_;
   std::vector<ImageSubscriberPtr> imageSubs_;
   std::vector<CameraInfoSubscriberPtr> cameraInfoSubs_;
-  std::vector<ChannelInfoSubscriberPtr> channelInfoSubs_;
   std::vector<CameraSyncPtr> cameraSyncs_;
-  std::vector<CameraChannelSyncPtr> cameraChannelSyncs_;
-  std::vector<PointCloudSyncPtr> pointCloudSyncs_;
   std::vector<ros::Publisher> mapPubs_;
   ros::Timer updateVarianceTimer_;
   ros::Timer updateTimeTimer_;
