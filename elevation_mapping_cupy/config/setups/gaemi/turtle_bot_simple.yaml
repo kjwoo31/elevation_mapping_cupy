@@ -12,13 +12,13 @@ subscribers:
     topic_name: '/camera/depth/image_raw'
     camera_info_topic_name: '/camera/depth/camera_info'
     data_type: depth
-  color_cam: # for color camera
-    topic_name: '/camera/rgb/image_raw'
-    camera_info_topic_name: '/camera/depth/camera_info'
-    data_type: image
+  # color_cam: # for color camera
+  #   topic_name: '/camera/rgb/image_raw'
+  #   camera_info_topic_name: '/camera/depth/camera_info'
+  #   data_type: image
 
 publishers:
   elevation_map_raw:
-    layers: ['elevation', 'rgb']
+    layers: ['elevation']
     basic_layers: ['elevation']
     fps: 5.0

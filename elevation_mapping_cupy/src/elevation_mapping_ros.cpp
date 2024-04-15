@@ -348,6 +348,14 @@ void ElevationMappingNode::depthCallback(const sensor_msgs::ImageConstPtr& image
   // Get image
   cv::Mat image = cv_bridge::toCvShare(image_msg, image_msg->encoding)->image;
 
+  // // Camera matrix for cliff_gemini2 camera
+  // double camera_info[] = {
+  //     612.443, 0.0, 628.497,
+  //     0.0, 612.443, 400.130,
+  //     0.0, 0.0, 0.5
+  // };
+  // Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> cameraMatrix(&camera_info[0]);
+
   // Extract camera matrix
   Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> cameraMatrix(&camera_info_msg->K[0]);
 

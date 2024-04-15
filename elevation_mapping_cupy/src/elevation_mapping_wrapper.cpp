@@ -222,7 +222,6 @@ void ElevationMappingWrapper::get_grid_map(grid_map::GridMap& gridMap, const std
   grid_map::Position position(pos(0, 0), pos(0, 1));
   grid_map::Length length(map_length_, map_length_);
   gridMap.setGeometry(length, resolution_, position);
-  std::vector<Eigen::MatrixXf> maps;
 
   for (const auto& layerName : layerNames) {
     bool exists = map_.attr("exists_layer")(layerName).cast<bool>();
