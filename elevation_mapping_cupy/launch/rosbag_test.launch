@@ -3,23 +3,22 @@
 <launch>
     <env name="PYTHONPATH" value="/home/robotis/.local/lib/python3.8/site-packages:$(env PYTHONPATH)" />
 
-    <arg name="rviz_config" default="$(find elevation_mapping_cupy)/rviz/turtle_example.rviz"/>
+    <arg name="rviz_config" default="$(find elevation_mapping_cupy)/rviz/gaemi_example.rviz"/>
 
     <param name="/use_sim_time" type="bool" value="true"/>
-
 
     <!-- run laserscan_to_pointcloud node -->
     <!-- <include file="$(find elevation_mapping_cupy)/launch/include/laserscan_to_pointcloud.launch">
     </include> -->
 
     <!-- run depth_to_pointcloud node -->
-    <include file="$(find elevation_mapping_cupy)/launch/include/depth_to_pointcloud.launch">
-    </include>
+    <!-- <include file="$(find elevation_mapping_cupy)/launch/include/depth_to_pointcloud.launch">
+    </include> -->
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)"/>
 
     <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen">
-        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/turtle_bot/core_param.yaml"/>
-        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/turtle_bot/turtle_bot_simple.yaml"/>
+        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/gaemi/core_param.yaml"/>
+        <rosparam command="load" file="$(find elevation_mapping_cupy)/config/setups/gaemi/gaemi_rosbag.yaml"/>
     </node>
 </launch>

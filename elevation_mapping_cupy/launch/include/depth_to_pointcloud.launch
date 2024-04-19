@@ -5,7 +5,7 @@
     <node pkg="nodelet" type="nodelet" name="vision_nodelet_manager"
             args="manager" output="screen"/>
 
-    <node name="depth_img_rect" pkg="nodelet" type="nodelet"
+    <!-- <node name="depth_img_rect" pkg="nodelet" type="nodelet"
             args="load image_proc/rectify vision_nodelet_manager">
             <remap from="image_mono"
                     to="cliff_gemini2/depth/image_raw"/>
@@ -13,15 +13,15 @@
                     to="cliff_gemini2/depth/camera_info"/>
             <remap from="image_rect"
                     to="cliff_gemini2/depth/image_rect"/>
-    </node>
+    </node> -->
 
     <node name="depth_to_pcl" pkg="nodelet" type="nodelet"
             args="load depth_image_proc/point_cloud_xyz
-                    vision_nodelet_manager ">
+                    vision_nodelet_manager" output="screen">
             <remap from="camera_info"
                     to="cliff_gemini2/depth/camera_info"/>
             <remap from="image_rect"
-                    to="cliff_gemini2/depth/image_rect"/>
+                    to="cliff_gemini2/depth/image_raw"/>
             <remap from="points"
                     to="cliff_gemini2/depth/depth_to_cloud" />
     </node>
