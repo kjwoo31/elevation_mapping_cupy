@@ -1,0 +1,11 @@
+# 플러그인 세팅.
+
+height_thresh:                                # em_core/plugins의 파일명과 같은 이름을 사용한다.
+  enable: True                                # 플러그인 사용 여부
+  fill_nan: True                              # 유효하지 않은 셀에 NaN 채우기
+  is_height_layer: False                      # 높이 layer 여부 (높이 layer: elevation, 아닌 예: traversability)
+  layer_name: "height_thresh"                 # layer 이름
+  extra_params:                               # 플러그인을 초기화할 때 사용하는 매개변수
+    resolution: 0.05
+    threshold: 0.02
+    use_threshold: True

@@ -1,0 +1,39 @@
+# 플러그인 세팅 예시.
+# em_core/plugins에 파일명이 존재해야 한다. 아래 4개 플러그인은 기존 elevation_mapping_cupy 레퍼지토리에서 찾을 수 있다.
+
+# min_filter fills in minimum value around the invalid cell.
+min_filter:
+  enable: True                                # 플러그인 사용 여부
+  fill_nan: False                             # 유효하지 않은 셀에 NaN 채우기
+  is_height_layer: True                       # 높이 layer 여부 (높이 layer: elevation, 아닌 예: traversability)
+  layer_name: "min_filter"                    # layer 이름
+  extra_params:                               # 플러그인을 초기화할 때 사용하는 매개변수
+    dilation_size: 1                          # 패치 크기
+    iteration_n: 30                           # 반복 횟수
+# Apply smoothing.
+smooth_filter:
+  enable: True
+  fill_nan: False
+  is_height_layer: True
+  layer_name: "smooth"
+  extra_params:
+    input_layer_name: "min_filter"
+# Apply inpainting using opencv
+inpainting:
+  enable: True
+  fill_nan: False
+  is_height_layer: True
+  layer_name: "inpaint"
+  extra_params:
+    method: "telea"                           # telea or ns
+# Apply smoothing for inpainted layer
+erosion:
+  enable: True
+  fill_nan: False
+  is_height_layer: False
+  layer_name: "erosion"
+  extra_params:
+    input_layer_name: "traversability"
+    dilation_size: 3
+    iteration_n: 20
+    reverse: True
