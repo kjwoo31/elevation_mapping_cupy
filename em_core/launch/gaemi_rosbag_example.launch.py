@@ -51,8 +51,8 @@ def generate_launch_description():
         'map',
         'mod_office_5th.yaml')
     start_map_saver_server_cmd = Node(
-        package='nav2_map_server',
-        executable='map_server',
+        package='gaemi_nav_map_server',
+        executable='gaemi_nav_map_server',
         output='screen',
         emulate_tty=True,
         parameters=[
@@ -82,7 +82,7 @@ def generate_launch_description():
     ld.add_action(rviz_node)
 
     # rosbag 실행
-    rosbag_dir = os.path.join(get_package_share_directory('em_core'), 'rosbag', 'gaemi_rosbag')
+    rosbag_dir = '/mnt/OT_DATASET/gaemi_rosbag'
     rosbag_play_node = ExecuteProcess(
         cmd=['ros2', 'bag', 'play', rosbag_dir],
         output='screen')

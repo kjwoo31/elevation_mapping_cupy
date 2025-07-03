@@ -38,8 +38,8 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
   double update_grid_map_fps;
   bool use_manual_camera_info;
 
-  this->declare_parameter("publishers.pub_list");
-  this->declare_parameter("subscribers.sub_list");
+  this->declare_parameter("publishers.pub_list", std::vector<std::string>());
+  this->declare_parameter("subscribers.sub_list", std::vector<std::string>());
   this->declare_parameter("update_variance_fps", 0.0);
   this->declare_parameter("update_map_time_interval", 0.1);
   this->declare_parameter("update_pose_fps", 10.0);
@@ -58,7 +58,7 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
   update_grid_map_fps = this->get_parameter("map_acquire_fps").as_double();
   use_manual_camera_info = this->get_parameter("use_manual_camera_info").as_bool();
   if (use_manual_camera_info) {
-    this->declare_parameter("manual_camera_info");
+    this->declare_parameter("manual_camera_info", std::vector<double>());
     manual_camera_info_ = this->get_parameter("manual_camera_info").as_double_array();
   }
   map_frame_id_ = this->get_parameter("map_frame").as_string();
@@ -72,12 +72,12 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
   rclcpp::SensorDataQoS sensor_qos;
   sensor_qos.keep_last(1);
   for (std::string & key : sub_list) {
-    this->declare_parameter("subscribers." + key + ".data_type");
+    this->declare_parameter("subscribers." + key + ".data_type", std::string(""));
     std::string type = this->get_parameter("subscribers." + key + ".data_type").as_string();
 
     // type에 맞게 subscriber를 활용한다.
     if (type == "pointcloud") {  // 1. 포인트클라우드
-      this->declare_parameter("subscribers." + key + ".topic_name");
+      this->declare_parameter("subscribers." + key + ".topic_name", "");
       std::string pcd_topic = this->get_parameter("subscribers." + key + ".topic_name").as_string();
 
       rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::ConstSharedPtr subscription =
@@ -88,7 +88,7 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
       pcd_subs_.push_back(subscription);
       RCLCPP_INFO_STREAM(this->get_logger(), "Subscribed to PointCloud2 topic: " << pcd_topic);
     } else if (type == "depth") {  // 2. Depth 이미지
-      this->declare_parameter("subscribers." + key + ".topic_name");
+      this->declare_parameter("subscribers." + key + ".topic_name", "");
       std::string camera_topic =
         this->get_parameter("subscribers." + key + ".topic_name").as_string();
 
@@ -106,7 +106,7 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
         RCLCPP_INFO_STREAM(this->get_logger(), "Subscribed to Image topic: " << camera_topic);
         // message_filter를 활용하여 이미지와 camera_info의 시간을 맞추어 subscribe한다.
       } else {
-        this->declare_parameter("subscribers." + key + ".camera_info_topic_name");
+        this->declare_parameter("subscribers." + key + ".camera_info_topic_name", "");
         std::string info_topic = this->get_parameter(
           "subscribers." + key + ".camera_info_topic_name").as_string();
 
@@ -125,8 +125,8 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
           "Subscribed to Image topic: " << camera_topic << ", Camera info topic: " << info_topic);
       }
     } else if (type == "image") {  // 3. RGB 혹은 Segmentation 이미지
-      this->declare_parameter("subscribers." + key + ".topic_name");
-      this->declare_parameter("subscribers." + key + ".camera_info_topic_name");
+      this->declare_parameter("subscribers." + key + ".topic_name", "");
+      this->declare_parameter("subscribers." + key + ".camera_info_topic_name", "");
       std::string camera_topic =
         this->get_parameter("subscribers." + key + ".topic_name").as_string();
       std::string info_topic =
@@ -140,7 +140,7 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
       camera_info_subs_.push_back(cam_info_sub);
       // message_filter를 활용하여 이미지, camera_info, 채널 정보의 시간을 맞추어 subscribe한다.
       try {
-        this->declare_parameter("subscribers." + key + ".channel_info_topic_name");
+        this->declare_parameter("subscribers." + key + ".channel_info_topic_name", "");
         std::string channel_info_topic = this->get_parameter(
           "subscribers." + key + ".channel_info_topic_name").as_string();
 
@@ -183,9 +183,9 @@ ElevationMappingNode::ElevationMappingNode(const std::string & node_name)
   for (std::string & topic_name : pub_list) {
     std::vector<std::string> layers_list;
     std::vector<std::string> basic_layers_list;
-    this->declare_parameter("publishers." + topic_name + ".layers");
-    this->declare_parameter("publishers." + topic_name + ".basic_layers");
-    this->declare_parameter("publishers." + topic_name + ".fps");
+    this->declare_parameter("publishers." + topic_name + ".layers", std::vector<std::string>());
+    this->declare_parameter("publishers." + topic_name + ".basic_layers", std::vector<std::string>());
+    this->declare_parameter("publishers." + topic_name + ".fps", 0.0);
     std::vector<std::string> layers =
       this->get_parameter("publishers." + topic_name + ".layers").as_string_array();
     std::vector<std::string> basic_layers = this->get_parameter(
@@ -518,7 +518,7 @@ void ElevationMappingNode::input_image_of_channels(
       channels.size());
     RCLCPP_ERROR_STREAM(
       this->get_logger(),
-      "Current Channels: " << boost::algorithm::join(channels, ", "));
+      "Current Channels: " << rcpputils::join(channels, ", "));
     return;
   }
 

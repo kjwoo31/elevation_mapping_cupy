@@ -47,10 +47,10 @@ class SemanticMap:
 
         self.semantic_map = cp.zeros(
             (self.amount_layer_names, self.param.cell_n, self.param.cell_n),
-            dtype=param.data_type)
+            dtype=np.float32)
         self.new_map = cp.zeros(
             (self.amount_layer_names, self.param.cell_n, self.param.cell_n),
-            param.data_type)
+            np.float32)
 
         self.delete_new_layers = cp.ones(self.new_map.shape[0], cp.bool8)
         self.fusion_manager = FusionManager(self.param)
@@ -92,11 +92,11 @@ class SemanticMap:
             self.layer_names.append(name)
             self.semantic_map = cp.append(
                 self.semantic_map,
-                cp.zeros((1, self.param.cell_n, self.param.cell_n), dtype=self.param.data_type),
+                cp.zeros((1, self.param.cell_n, self.param.cell_n), dtype=np.float32),
                 axis=0)
             self.new_map = cp.append(
                 self.new_map,
-                cp.zeros((1, self.param.cell_n, self.param.cell_n), dtype=self.param.data_type),
+                cp.zeros((1, self.param.cell_n, self.param.cell_n), dtype=np.float32),
                 axis=0)
             self.delete_new_layers = cp.append(
                 self.delete_new_layers,

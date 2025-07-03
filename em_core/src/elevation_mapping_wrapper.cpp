@@ -123,7 +123,20 @@ void ElevationMappingWrapper::initialize(rclcpp::Node * node)
   for (int i = 0; i < static_cast<int>(paramNames.size()); ++i) {
     std::string type = pybind11::cast<std::string>(paramTypes[i]);
     std::string name = pybind11::cast<std::string>(paramNames[i]);
-    if (!node->has_parameter(name)) {node->declare_parameter(name);}
+    if (!node->has_parameter(name)) {
+        if (type == "float") {
+            node->declare_parameter(name, 0.0);
+        } else if (type == "str") {
+            node->declare_parameter(name, "");
+        } else if (type == "bool") {
+            node->declare_parameter(name, false);
+        } else if (type == "int") {
+            node->declare_parameter(name, 0);
+        } else {
+            // Fallback for unknown type
+            node->declare_parameter(name, "");
+        }
+    }
     if (type == "float") {
       try {
         double param = node->get_parameter(name).as_double();

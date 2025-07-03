@@ -42,7 +42,7 @@ class ElevationMap:
 
     def __init__(self, param: Parameter):
         self.param = param
-        self.data_type = self.param.data_type
+        self.data_type = np.float32
         self.resolution = param.resolution
         self.center = cp.array([0, 0, 0], dtype=self.data_type)
         self.base_rotation = cp.eye(3, dtype=self.data_type)
